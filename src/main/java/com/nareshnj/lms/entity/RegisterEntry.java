@@ -1,12 +1,14 @@
 package com.nareshnj.lms.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
 public class RegisterEntry {
 
@@ -18,7 +20,7 @@ public class RegisterEntry {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "register_entry_id")
     private Set<BookEntry> bookEntries;
 

@@ -1,10 +1,12 @@
 package com.nareshnj.lms.entity;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 
-@Data
+@Getter
+@Setter
 @Entity
 public class BookDetails {
     @Id

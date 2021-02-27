@@ -5,8 +5,10 @@ import com.nareshnj.lms.pojo.RegisterEntryRequest;
 import com.nareshnj.lms.pojo.Response;
 import com.nareshnj.lms.repository.BookDetailsRepository;
 import com.nareshnj.lms.repository.RegisterEntryRepository;
+import com.nareshnj.lms.service.BookDetailsService;
 import com.nareshnj.lms.service.BookService;
 import com.nareshnj.lms.service.RegisterEntryService;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Service
 public class RegisterEntryServiceImpl implements RegisterEntryService {
 
     private static final int BOOKS_QUANTITY_LIMIT = 2;
@@ -21,12 +24,12 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
 
     private BookService bookService;
     private RegisterEntryRepository registerEntryRepository;
-    private BookDetailsRepository bookDetailsRepository;
+    private BookDetailsService bookDetailsService;
 
-    public RegisterEntryServiceImpl(BookService bookService, RegisterEntryRepository registerEntryRepository, BookDetailsRepository bookDetailsRepository) {
+    public RegisterEntryServiceImpl(BookService bookService, RegisterEntryRepository registerEntryRepository, BookDetailsService bookDetailsService) {
         this.bookService = bookService;
         this.registerEntryRepository = registerEntryRepository;
-        this.bookDetailsRepository = bookDetailsRepository;
+        this.bookDetailsService = bookDetailsService;
     }
 
     @Override
@@ -51,6 +54,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
         return new Response("SUCCESS", "Request processed successfully.");
     }
 
+    @Override
     public void updateBookCount(List<Book> books, String entryType) {
         List<BookDetails> updatedBookDetails = new ArrayList<>();
         for (Book book : books) {
@@ -65,7 +69,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
             updatedBookDetails.add(bookDetails);
         }
 
-        bookDetailsRepository.saveAll(updatedBookDetails);
+        bookDetailsService.saveAll(updatedBookDetails);
     }
 
     private RegisterEntry mapToRegisterEntry(RegisterEntryRequest request) {

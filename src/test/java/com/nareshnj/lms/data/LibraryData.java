@@ -6,6 +6,7 @@ import com.nareshnj.lms.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LibraryData {
     public static final long BOOK_1_ID = 1L;
@@ -35,6 +36,20 @@ public class LibraryData {
         List<Book> books = new ArrayList<>();
         books.add(createBook(BOOK_1_ID, BOOK_1_NAME, BOOK_1_AUTHOR, BOOK_1_DETAILS_ID, BOOK_1_QUANTITY));
         return books;
+    }
+
+    public static List<BookDetails> getBookDetailsList() {
+        return getBooks()
+                .stream()
+                .map(book -> book.getBookDetails())
+                .collect(Collectors.toList());
+    }
+
+    public static List<BookDetails> getAvailableBookDetails() {
+        return getAvailableBook()
+                .stream()
+                .map(book -> book.getBookDetails())
+                .collect(Collectors.toList());
     }
 
     public static List<Book> getBooksWithNullIds() {
