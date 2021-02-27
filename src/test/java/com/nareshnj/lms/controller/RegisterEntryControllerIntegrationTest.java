@@ -81,7 +81,7 @@ public class RegisterEntryControllerIntegrationTest {
     }
 
     @Test
-    public void test_givenBooksPresentInLibrary_whenUserBorrowBook_thenBookAddedBorrowedList_andRemovedFromLibrary() throws Exception {
+    public void test_givenBooksPresentInLibrary_whenUserBorrowBook_thenBookAddedInBorrowedList_andRemovedFromLibrary() throws Exception {
 
         RegisterEntryRequest entryRequest = createRegisterEntryRequest(ENTRY_TYPE_BORROW);
 
@@ -97,11 +97,18 @@ public class RegisterEntryControllerIntegrationTest {
         assertEquals(ENTRY_TYPE_BORROW, registerEntries.get(0).getEntryType());
         assertEquals(books.size(), registerEntries.get(0).getBookEntries().size());
 
+        assertUserBorrowedBooksCount(books.size());
         assertLibraryBookCount(ENTRY_TYPE_BORROW);
     }
 
     @Test
-    public void test_givenBooksPresentInLibrary_whenUserReturnBook_thenBookRemovedFromBorrowedList_andAddedInLibrary() throws Exception {
+    public void test_givenUserAlreadyBorrowedBook_whenUserReturnBook_thenBookRemovedFromBorrowedList_andAddedInLibrary() throws Exception {
+
+        RegisterEntryRequest borrowEntryRequest = createRegisterEntryRequest(ENTRY_TYPE_BORROW);
+        mockMvc.perform(post("/v1/register")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(borrowEntryRequest)))
+                .andExpect(status().isOk());
 
         RegisterEntryRequest entryRequest = createRegisterEntryRequest(ENTRY_TYPE_RETURN);
 
@@ -113,23 +120,26 @@ public class RegisterEntryControllerIntegrationTest {
         Set<Long> books = entryRequest.getBooks();
         List<RegisterEntry> registerEntries = registerEntryRepository.findByUserId(user.getId());
 
-        assertEquals(1, registerEntries.size());
-        assertEquals(ENTRY_TYPE_RETURN, registerEntries.get(0).getEntryType());
-        assertEquals(books.size(), registerEntries.get(0).getBookEntries().size());
+        assertEquals(2, registerEntries.size());
+        assertEquals(4, bookEntryRepository.findAll().size());
 
+        assertUserBorrowedBooksCount(0);
         assertLibraryBookCount(ENTRY_TYPE_RETURN);
     }
+
+    private void assertUserBorrowedBooksCount(int expectedCount) {
+        assertEquals(expectedCount, bookEntryRepository.getBorrowedBookEntriesByUserId(user.getId()).size());
+    }
+
 
     private void assertLibraryBookCount(String entryType) {
         List<BookDetails> bookDetailsList = bookDetailsRepository.findAll();
         for (Book book : initialBookList) {
             for (BookDetails bookDetails : bookDetailsList) {
                 if (book.getBookDetails().getId() == bookDetails.getId()) {
-                    int expectedQuantity;
+                    int expectedQuantity = book.getBookDetails().getQuantity();
                     if (ENTRY_TYPE_BORROW.equals(entryType)) {
-                        expectedQuantity = book.getBookDetails().getQuantity() - 1;
-                    } else {
-                        expectedQuantity = book.getBookDetails().getQuantity() + 1;
+                        --expectedQuantity;
                     }
                     assertEquals(expectedQuantity, bookDetails.getQuantity());
                 }

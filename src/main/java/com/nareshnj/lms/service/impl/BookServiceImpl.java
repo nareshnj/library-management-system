@@ -1,6 +1,7 @@
 package com.nareshnj.lms.service.impl;
 
 import com.nareshnj.lms.entity.Book;
+import com.nareshnj.lms.pojo.RegisterEntryRequest;
 import com.nareshnj.lms.repository.BookRepository;
 import com.nareshnj.lms.service.BookService;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public List<Book> getAvailableBookListByIds(Set<Long> books) {
-        return bookRepository.getAvailableBookListByIds(books);
+    public List<Book> getAvailableBooksForUser(RegisterEntryRequest entryRequest) {
+        return bookRepository.getAvailableBookListByIds(entryRequest.getBooks());
     }
 }

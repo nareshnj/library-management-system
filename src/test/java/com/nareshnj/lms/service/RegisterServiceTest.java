@@ -64,7 +64,7 @@ public class RegisterServiceTest {
     public void test_whenUserBorrowBooksInLimit_and_booksAvailableInLibrary_then_processRequest() {
 
         RegisterEntryRequest entryRequest = createRegisterEntryRequest();
-        when(bookService.getAvailableBookListByIds(entryRequest.getBooks())).thenReturn(getBooks());
+        when(bookService.getAvailableBooksForUser(entryRequest)).thenReturn(getBooks());
 
         Response response = registerService.createEntry(entryRequest);
 

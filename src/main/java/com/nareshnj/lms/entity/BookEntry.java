@@ -23,4 +23,6 @@ public class BookEntry {
 
     private int quantity;
 
+    private boolean isActive;
+
 }

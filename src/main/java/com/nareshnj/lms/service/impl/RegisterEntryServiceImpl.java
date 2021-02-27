@@ -3,9 +3,9 @@ package com.nareshnj.lms.service.impl;
 import com.nareshnj.lms.entity.*;
 import com.nareshnj.lms.pojo.RegisterEntryRequest;
 import com.nareshnj.lms.pojo.Response;
-import com.nareshnj.lms.repository.BookDetailsRepository;
 import com.nareshnj.lms.repository.RegisterEntryRepository;
 import com.nareshnj.lms.service.BookDetailsService;
+import com.nareshnj.lms.service.BookEntryService;
 import com.nareshnj.lms.service.BookService;
 import com.nareshnj.lms.service.RegisterEntryService;
 import org.springframework.stereotype.Service;
@@ -20,16 +20,19 @@ import java.util.Set;
 public class RegisterEntryServiceImpl implements RegisterEntryService {
 
     private static final int BOOKS_QUANTITY_LIMIT = 2;
-    private static final String ENTRY_TYPE = "BORROW";
+    private static final String ENTRY_TYPE_BORROW = "BORROW";
+    private static final String ENTRY_TYPE_RETURN = "RETURN";
 
     private BookService bookService;
     private RegisterEntryRepository registerEntryRepository;
     private BookDetailsService bookDetailsService;
+    private BookEntryService bookEntryService;
 
-    public RegisterEntryServiceImpl(BookService bookService, RegisterEntryRepository registerEntryRepository, BookDetailsService bookDetailsService) {
+    public RegisterEntryServiceImpl(BookService bookService, RegisterEntryRepository registerEntryRepository, BookDetailsService bookDetailsService, BookEntryService bookEntryService) {
         this.bookService = bookService;
         this.registerEntryRepository = registerEntryRepository;
         this.bookDetailsService = bookDetailsService;
+        this.bookEntryService = bookEntryService;
     }
 
     @Override
@@ -40,9 +43,9 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
             return response;
         }
 
-        List<Book> books = bookService.getAvailableBookListByIds(entry.getBooks());
+        List<Book> books = bookService.getAvailableBooksForUser(entry);
 
-        if (ENTRY_TYPE.equals(entry.getRequestType()) && books.size() < entry.getBooks().size()) {
+        if (ENTRY_TYPE_BORROW.equals(entry.getRequestType()) && books.size() < entry.getBooks().size()) {
             response = new Response("ERROR", "One or more requested books not available.");
             return response;
         }
@@ -50,8 +53,28 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
         RegisterEntry registerEntry = mapToRegisterEntry(entry);
         registerEntryRepository.save(registerEntry);
         updateBookCount(books, registerEntry.getEntryType());
+        inactivatePreviouslyBorrowedBookEntries(registerEntry);
 
         return new Response("SUCCESS", "Request processed successfully.");
+    }
+
+    private void inactivatePreviouslyBorrowedBookEntries(RegisterEntry registerEntry) {
+        if(ENTRY_TYPE_RETURN.equals(registerEntry.getEntryType())) {
+            List<BookEntry> borrowedBookEntries = bookEntryService.getBorrowedBookEntriesByUserId(registerEntry.getUser().getId());
+            List<BookEntry> inactivateEntries = new ArrayList<>();
+            for(BookEntry bookEntry: registerEntry.getBookEntries()) {
+                for(BookEntry borrowedBookEntry : borrowedBookEntries) {
+                    if(bookEntry.getBook().getId() == borrowedBookEntry.getBook().getId()) {
+                        borrowedBookEntry.setActive(false);
+                        inactivateEntries.add(borrowedBookEntry);
+                    }
+                }
+            }
+
+            if(!inactivateEntries.isEmpty()) {
+                bookEntryService.updateAll(inactivateEntries);
+            }
+        }
     }
 
     @Override
@@ -60,7 +83,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
         for (Book book : books) {
             BookDetails bookDetails = book.getBookDetails();
             int quantity;
-            if (ENTRY_TYPE.equals(entryType)) {
+            if (ENTRY_TYPE_BORROW.equals(entryType)) {
                 quantity = bookDetails.getQuantity() - 1;
             } else {
                 quantity = bookDetails.getQuantity() + 1;
@@ -87,6 +110,13 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
             Book book = new Book();
             book.setId(id);
             bookEntry.setBook(book);
+
+            if(ENTRY_TYPE_BORROW.equals(request.getRequestType())) {
+                bookEntry.setActive(true);
+            }else {
+                bookEntry.setActive(false);
+            }
+
             bookEntrySet.add(bookEntry);
         }
         entry.setBookEntries(bookEntrySet);
