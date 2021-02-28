@@ -1,6 +1,8 @@
 package com.nareshnj.lms.service;
 
 import com.nareshnj.lms.entity.RegisterEntry;
+import com.nareshnj.lms.exception.SameBookBorrowException;
+import com.nareshnj.lms.exception.LimitExceedException;
 import com.nareshnj.lms.pojo.RegisterEntryRequest;
 import com.nareshnj.lms.pojo.Response;
 import com.nareshnj.lms.repository.RegisterEntryRepository;
@@ -11,12 +13,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import static com.nareshnj.lms.data.LibraryData.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -36,6 +40,9 @@ public class RegisterServiceTest {
     @Mock
     private BookDetailsService bookDetailsService;
 
+    @Mock
+    private BookEntryService bookEntryService;
+
 
     @Test
     public void test_whenBorrowedMoreThanLimit_then_rejectRequest() {
@@ -44,20 +51,25 @@ public class RegisterServiceTest {
         Set<Long> bookIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 4L));
         entry.setBooks(bookIds);
 
-        Response response = registerService.createEntry(entry);
+        LimitExceedException limitExceedException = assertThrows(LimitExceedException.class, () -> registerService.createEntry(entry));
 
-        assertEquals("ERROR", response.getStatus());
+        assertEquals("User not allowed to borrow more than 2 books.", limitExceedException.getMessage());
     }
 
+
     @Test
-    public void test_whenUserBorrowBooksInLimit_butNotAvailableInLibrary_then_rejectRequest() {
+    public void test_whenUserBorrowedMultipleCopies_then_rejectRequest() {
+        RegisterEntryRequest entry = new RegisterEntryRequest();
+        entry.setUserId(1L);
+        Set<Long> bookIds = new HashSet<>(Arrays.asList(1L));
+        entry.setBooks(bookIds);
 
-        RegisterEntryRequest entryRequest = createRegisterEntryRequest();
-        when(bookDetailsService.getAvailableBookListByIds(entryRequest.getBooks())).thenReturn(getAvailableBookDetails());
+        when(bookEntryService.getBorrowedBookIdsByUserId(entry.getUserId())).thenReturn(new ArrayList<>(bookIds));
 
-        Response response = registerService.createEntry(entryRequest);
+        SameBookBorrowException sameBookBorrowException = assertThrows(SameBookBorrowException.class, () -> registerService.createEntry(entry));
 
-        assertEquals("ERROR", response.getStatus());
+        String expectedMessage = String.format("User already have copy of %s book.", bookIds);
+        assertEquals(expectedMessage, sameBookBorrowException.getMessage());
     }
 
     @Test

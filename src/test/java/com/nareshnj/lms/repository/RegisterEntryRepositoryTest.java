@@ -45,7 +45,7 @@ public class RegisterEntryRepositoryTest {
         testUser.setLastName("testLastName");
         userRepository.save(testUser);
 
-        books = LibraryData.getBooksWithNullIds();
+        books = LibraryData.createBookList();
         bookRepository.saveAll(books);
 
     }

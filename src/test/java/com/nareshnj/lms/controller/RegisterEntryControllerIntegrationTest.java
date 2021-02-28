@@ -1,6 +1,7 @@
 package com.nareshnj.lms.controller;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nareshnj.lms.LibraryManagementApplication;
 import com.nareshnj.lms.data.LibraryData;
@@ -18,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -68,7 +70,7 @@ public class RegisterEntryControllerIntegrationTest {
 
     @BeforeEach
     public void setUp() {
-        initialBookList = LibraryData.getBooksWithNullIds();
+        initialBookList = LibraryData.createBookList();
         bookRepository.saveAll(initialBookList);
     }
 
@@ -127,6 +129,21 @@ public class RegisterEntryControllerIntegrationTest {
         assertLibraryBookCount(ENTRY_TYPE_RETURN);
     }
 
+    @Test
+    public void test_givenUserAlreadyBorrowedBook_whenUserBorrowSameBookCopyAgain_thenThrowSameBookBorrowException() throws Exception {
+        RegisterEntryRequest borrowEntryRequest = createRegisterEntryWithSingleBook(ENTRY_TYPE_BORROW);
+        mockMvc.perform(post("/v1/register")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(borrowEntryRequest)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/v1/register")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(borrowEntryRequest)))
+                .andExpect(status().isConflict());
+
+    }
+
     private void assertUserBorrowedBooksCount(int expectedCount) {
         assertEquals(expectedCount, bookEntryRepository.getBorrowedBookEntriesByUserId(user.getId()).size());
     }
@@ -151,6 +168,18 @@ public class RegisterEntryControllerIntegrationTest {
         RegisterEntryRequest entry = new RegisterEntryRequest();
         entry.setUserId(user.getId());
         Set<Long> bookIds = bookRepository.findAll().stream().map(Book::getId).collect(Collectors.toSet());
+        entry.setBooks(bookIds);
+        entry.setRequestType(entryType);
+        return entry;
+    }
+
+    private RegisterEntryRequest createRegisterEntryWithSingleBook(String entryType) {
+        RegisterEntryRequest entry = new RegisterEntryRequest();
+        entry.setUserId(user.getId());
+        Book book = LibraryData.createBook();
+        bookRepository.save(book);
+        Set<Long> bookIds = new HashSet<>();
+        bookIds.add(book.getId());
         entry.setBooks(bookIds);
         entry.setRequestType(entryType);
         return entry;

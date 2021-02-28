@@ -52,15 +52,19 @@ public class LibraryData {
                 .collect(Collectors.toList());
     }
 
-    public static List<Book> getBooksWithNullIds() {
+    public static List<Book> createBookList() {
         List<Book> books = new ArrayList<>();
         books.add(createBook(null, BOOK_1_NAME, BOOK_1_AUTHOR, null, BOOK_1_QUANTITY));
         books.add(createBook(null, BOOK_2_NAME, BOOK_2_AUTHOR, null, BOOK_2_QUANTITY));
         return books;
     }
 
+    public static Book createBook() {
+        return createBook(null, BOOK_1_NAME, BOOK_1_AUTHOR, null, BOOK_1_QUANTITY);
+    }
 
-    private static Book createBook(Long bookId, String bookName, String author, Long bookDetailsId, int quantity) {
+
+    public static Book createBook(Long bookId, String bookName, String author, Long bookDetailsId, int quantity) {
         BookDetails bookDetails = new BookDetails();
         bookDetails.setId(bookDetailsId);
         bookDetails.setQuantity(quantity);

@@ -1,6 +1,8 @@
 package com.nareshnj.lms.service.impl;
 
 import com.nareshnj.lms.entity.*;
+import com.nareshnj.lms.exception.SameBookBorrowException;
+import com.nareshnj.lms.exception.LimitExceedException;
 import com.nareshnj.lms.pojo.RegisterEntryRequest;
 import com.nareshnj.lms.pojo.Response;
 import com.nareshnj.lms.repository.RegisterEntryRepository;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class RegisterEntryServiceImpl implements RegisterEntryService {
@@ -37,25 +40,36 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
 
     @Override
     public Response createEntry(RegisterEntryRequest entry) {
-        Response response;
-        if (entry.getBooks().size() > BOOKS_QUANTITY_LIMIT) {
-            response = new Response("ERROR", String.format("User not allowed to borrow more than %d books.", BOOKS_QUANTITY_LIMIT));
-            return response;
-        }
 
-        List<Book> books = bookService.getAvailableBooksForUser(entry);
-
-        if (ENTRY_TYPE_BORROW.equals(entry.getRequestType()) && books.size() < entry.getBooks().size()) {
-            response = new Response("ERROR", "One or more requested books not available.");
-            return response;
-        }
+        validateEntryRequest(entry);
 
         RegisterEntry registerEntry = mapToRegisterEntry(entry);
         registerEntryRepository.save(registerEntry);
+
+        List<Book> books = bookService.getAvailableBooksForUser(entry);
         updateBookCount(books, registerEntry.getEntryType());
         inactivatePreviouslyBorrowedBookEntries(registerEntry);
 
         return new Response("SUCCESS", "Request processed successfully.");
+    }
+
+    private void validateEntryRequest(RegisterEntryRequest entryRequest) {
+        if(ENTRY_TYPE_BORROW.equals(entryRequest.getRequestType())) {
+            if (entryRequest.getBooks().size() > BOOKS_QUANTITY_LIMIT) {
+                throw new LimitExceedException(String.format("User not allowed to borrow more than %d books.", BOOKS_QUANTITY_LIMIT));
+            }
+
+            List<Long> borrowedBookIds = bookEntryService.getBorrowedBookIdsByUserId(entryRequest.getUserId());
+            if (BOOKS_QUANTITY_LIMIT < (borrowedBookIds.size() + entryRequest.getBooks().size())) {
+                throw new LimitExceedException(String.format("User not allowed to borrow more than %d books.", BOOKS_QUANTITY_LIMIT));
+            }
+
+            List<Long> notAllowedBookIds = borrowedBookIds.stream().filter(bookId -> borrowedBookIds.contains(bookId)).collect(Collectors.toList());
+            if (!notAllowedBookIds.isEmpty()) {
+                throw new SameBookBorrowException(String.format("User already have copy of %s book.", notAllowedBookIds));
+            }
+        }
+
     }
 
     private void inactivatePreviouslyBorrowedBookEntries(RegisterEntry registerEntry) {

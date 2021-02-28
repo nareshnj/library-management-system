@@ -20,7 +20,7 @@ public class BookRepositoryTest {
 
     @Test
     public void test_saveBook() {
-        Book book = LibraryData.getBooksWithNullIds().get(0);
+        Book book = LibraryData.createBookList().get(0);
 
         bookRepository.save(book);
 
