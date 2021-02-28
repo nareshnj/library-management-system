@@ -48,6 +48,7 @@ public class RegisterServiceTest {
     public void test_whenBorrowedMoreThanLimit_then_rejectRequest() {
         RegisterEntryRequest entry = new RegisterEntryRequest();
         entry.setUserId(1L);
+        entry.setEntryType(ENTRY_TYPE_BORROW);
         Set<Long> bookIds = new HashSet<>(Arrays.asList(1L, 2L, 3L, 4L));
         entry.setBooks(bookIds);
 
@@ -61,6 +62,7 @@ public class RegisterServiceTest {
     public void test_whenUserBorrowedMultipleCopies_then_rejectRequest() {
         RegisterEntryRequest entry = new RegisterEntryRequest();
         entry.setUserId(1L);
+        entry.setEntryType(ENTRY_TYPE_BORROW);
         Set<Long> bookIds = new HashSet<>(Arrays.asList(1L));
         entry.setBooks(bookIds);
 
@@ -93,7 +95,7 @@ public class RegisterServiceTest {
         bookIds.add(BOOK_1_ID);
         bookIds.add(BOOK_2_ID);
         entry.setBooks(bookIds);
-        entry.setRequestType(ENTRY_TYPE_BORROW);
+        entry.setEntryType(ENTRY_TYPE_BORROW);
         return entry;
     }
 }

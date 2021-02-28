@@ -26,16 +26,21 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
     private static final String ENTRY_TYPE_BORROW = "BORROW";
     private static final String ENTRY_TYPE_RETURN = "RETURN";
 
-    private BookService bookService;
-    private RegisterEntryRepository registerEntryRepository;
-    private BookDetailsService bookDetailsService;
-    private BookEntryService bookEntryService;
+    private final BookService bookService;
+    private final RegisterEntryRepository registerEntryRepository;
+    private final BookDetailsService bookDetailsService;
+    private final BookEntryService bookEntryService;
 
     public RegisterEntryServiceImpl(BookService bookService, RegisterEntryRepository registerEntryRepository, BookDetailsService bookDetailsService, BookEntryService bookEntryService) {
         this.bookService = bookService;
         this.registerEntryRepository = registerEntryRepository;
         this.bookDetailsService = bookDetailsService;
         this.bookEntryService = bookEntryService;
+    }
+
+    @Override
+    public List<RegisterEntry> getAllRegisterEntries() {
+        return registerEntryRepository.findByOrderByCreatedDateTimeDesc();
     }
 
     @Override
@@ -54,7 +59,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
     }
 
     private void validateEntryRequest(RegisterEntryRequest entryRequest) {
-        if(ENTRY_TYPE_BORROW.equals(entryRequest.getRequestType())) {
+        if(ENTRY_TYPE_BORROW.equals(entryRequest.getEntryType())) {
             if (entryRequest.getBooks().size() > BOOKS_QUANTITY_LIMIT) {
                 throw new LimitExceedException(String.format("User not allowed to borrow more than %d books.", BOOKS_QUANTITY_LIMIT));
             }
@@ -125,7 +130,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
             book.setId(id);
             bookEntry.setBook(book);
 
-            if(ENTRY_TYPE_BORROW.equals(request.getRequestType())) {
+            if(ENTRY_TYPE_BORROW.equals(request.getEntryType())) {
                 bookEntry.setActive(true);
             }else {
                 bookEntry.setActive(false);
@@ -134,7 +139,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
             bookEntrySet.add(bookEntry);
         }
         entry.setBookEntries(bookEntrySet);
-        entry.setEntryType(request.getRequestType());
+        entry.setEntryType(request.getEntryType());
         entry.setCreatedDateTime(LocalDateTime.now());
 
         return entry;

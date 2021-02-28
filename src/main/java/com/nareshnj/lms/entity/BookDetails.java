@@ -1,5 +1,6 @@
 package com.nareshnj.lms.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +14,7 @@ public class BookDetails {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "bookDetails")
     private Book book;
 

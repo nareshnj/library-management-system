@@ -1,7 +1,7 @@
 package com.nareshnj.lms.controller;
 
-import com.nareshnj.lms.entity.Book;
-import com.nareshnj.lms.service.BookService;
+import com.nareshnj.lms.entity.User;
+import com.nareshnj.lms.service.UserService;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,17 +11,17 @@ import java.util.List;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200")
-@RequestMapping("/v1/book")
-public class BookController {
+@RequestMapping("/v1/user")
+public class UserController {
 
-    private final BookService bookService;
+    private final UserService userService;
 
-    public BookController(BookService bookService) {
-        this.bookService = bookService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping
-    public List<Book> getAllBooks() {
-        return bookService.getAll();
+    public List<User> getAllUser() {
+        return userService.getAllUsers();
     }
 }

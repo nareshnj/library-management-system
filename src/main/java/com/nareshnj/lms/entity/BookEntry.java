@@ -1,5 +1,6 @@
 package com.nareshnj.lms.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,7 @@ public class BookEntry {
     @JoinColumn(name = "book_id", referencedColumnName = "id")
     private Book book;
 
+    @JsonIgnore
     @ManyToOne
     private RegisterEntry registerEntry;
 

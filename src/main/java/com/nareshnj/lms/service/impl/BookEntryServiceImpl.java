@@ -11,7 +11,7 @@ import java.util.List;
 @Service
 public class BookEntryServiceImpl implements BookEntryService {
 
-    private BookEntryRepository bookEntryRepository;
+    private final BookEntryRepository bookEntryRepository;
 
     public BookEntryServiceImpl(BookEntryRepository bookEntryRepository) {
         this.bookEntryRepository = bookEntryRepository;

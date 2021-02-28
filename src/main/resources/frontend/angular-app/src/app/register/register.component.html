@@ -1,0 +1,77 @@
+<div class="row mt-2 mb-1">
+  <div class="col d-flex justify-content-end">
+    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#registerModal">Create</button>
+  </div>
+</div>
+
+<table class="table table-hover table-striped table-sm">
+    <thead>
+      <tr>
+        <th scope="col">No</th>
+        <th scope="col">User</th>
+        <th scope="col">Entry Type</th>
+        <th scope="col">Created Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of registerEntryList">
+        <th scope="row">{{item.id}}</th>
+        <td>{{item.user.lastName}}, {{item.user.firstName}}</td>
+        <td>{{item.entryType}}</td>
+        <td>{{item.createdDateTime}}</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="registerModalLabel">Create Register Entry</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group row">
+              <label for="userLabel" class="col-sm-4 col-form-label col-form-label-sm">User</label>
+              <div class="col-sm-8">
+                  <select class="custom-select mr-sm-2" id="userLabel" [(ngModel)]="entryForm.userId" name="userId">
+                  <option value="-1">--- Select User ---</option>
+                    <option *ngFor="let user of userList" [ngValue]="user.id">{{user.lastName}}, {{user.firstName}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="entryTypeLabel" class="col-sm-4 col-form-label col-form-label-sm">Entry Type</label>
+              <div class="col-sm-8">
+                  <select class="custom-select mr-sm-2" id="entryTypeLabel" [(ngModel)]="entryForm.entryType" name="entryType">
+                  <option value="-1">--- Select Entry Type ---</option>
+                    <option *ngFor="let entry of entryType" [ngValue]="entry.id">{{entry.value}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row">
+              <label for="Label" class="col-sm-4 col-form-label col-form-label-sm">Book</label>
+              <div class="col-sm-8">
+                <ng-multiselect-dropdown
+                [placeholder]="'--- Select Books ---'"
+                [data]="bookList"
+                [(ngModel)]="entryForm.books"
+                [settings]="dropdownSettings"
+                name="books">
+              </ng-multiselect-dropdown>
+              </div>
+            </div>
+
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="submitRegisterEntry()">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>

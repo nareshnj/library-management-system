@@ -1,7 +1,6 @@
 package com.nareshnj.lms.controller;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nareshnj.lms.LibraryManagementApplication;
 import com.nareshnj.lms.data.LibraryData;
@@ -169,7 +168,7 @@ public class RegisterEntryControllerIntegrationTest {
         entry.setUserId(user.getId());
         Set<Long> bookIds = bookRepository.findAll().stream().map(Book::getId).collect(Collectors.toSet());
         entry.setBooks(bookIds);
-        entry.setRequestType(entryType);
+        entry.setEntryType(entryType);
         return entry;
     }
 
@@ -181,7 +180,7 @@ public class RegisterEntryControllerIntegrationTest {
         Set<Long> bookIds = new HashSet<>();
         bookIds.add(book.getId());
         entry.setBooks(bookIds);
-        entry.setRequestType(entryType);
+        entry.setEntryType(entryType);
         return entry;
     }
 }

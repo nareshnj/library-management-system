@@ -12,4 +12,6 @@ public interface RegisterEntryRepository extends JpaRepository<RegisterEntry, Lo
 
     //@Query("SELECT re from RegisterEntry re JOIN FETCH re.bookEntries")
     List<RegisterEntry> findByUserId(Long userId);
+
+    List<RegisterEntry> findByOrderByCreatedDateTimeDesc();
 }

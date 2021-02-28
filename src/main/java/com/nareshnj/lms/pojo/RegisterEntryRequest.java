@@ -10,6 +10,6 @@ public class RegisterEntryRequest {
 
     private long userId;
     private Set<Long> books;
-    private String requestType;
+    private String entryType;
     private LocalDateTime createdDate;
 }
