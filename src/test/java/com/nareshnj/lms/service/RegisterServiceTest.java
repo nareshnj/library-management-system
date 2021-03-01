@@ -1,8 +1,10 @@
 package com.nareshnj.lms.service;
 
+import com.nareshnj.lms.entity.Book;
 import com.nareshnj.lms.entity.RegisterEntry;
-import com.nareshnj.lms.exception.SameBookBorrowException;
+import com.nareshnj.lms.exception.BookUnavailableException;
 import com.nareshnj.lms.exception.LimitExceedException;
+import com.nareshnj.lms.exception.SameBookBorrowException;
 import com.nareshnj.lms.pojo.RegisterEntryRequest;
 import com.nareshnj.lms.pojo.Response;
 import com.nareshnj.lms.repository.RegisterEntryRepository;
@@ -67,18 +69,33 @@ public class RegisterServiceTest {
         entry.setBooks(bookIds);
 
         when(bookEntryService.getBorrowedBookIdsByUserId(entry.getUserId())).thenReturn(new ArrayList<>(bookIds));
+        when(bookService.getAvailableBooksInLibrary(entry)).thenReturn(Arrays.asList(new Book()));
 
         SameBookBorrowException sameBookBorrowException = assertThrows(SameBookBorrowException.class, () -> registerService.createEntry(entry));
 
-        String expectedMessage = String.format("User already have copy of %s book.", bookIds);
-        assertEquals(expectedMessage, sameBookBorrowException.getMessage());
+        assertEquals("User already have copy of requested book.", sameBookBorrowException.getMessage());
+    }
+
+    @Test
+    public void test_givenNoBookPresent_whenUserBorrowBook_then_rejectRequest() {
+        RegisterEntryRequest entry = new RegisterEntryRequest();
+        entry.setUserId(1L);
+        entry.setEntryType(ENTRY_TYPE_BORROW);
+        Set<Long> bookIds = new HashSet<>(Arrays.asList(1L));
+        entry.setBooks(bookIds);
+
+        when(bookEntryService.getBorrowedBookIdsByUserId(entry.getUserId())).thenReturn(new ArrayList<>(bookIds));
+
+        BookUnavailableException bookUnavailableException = assertThrows(BookUnavailableException.class, () -> registerService.createEntry(entry));
+
+        assertEquals("Requested book not available in library.", bookUnavailableException.getMessage());
     }
 
     @Test
     public void test_whenUserBorrowBooksInLimit_and_booksAvailableInLibrary_then_processRequest() {
 
         RegisterEntryRequest entryRequest = createRegisterEntryRequest();
-        when(bookService.getAvailableBooksForUser(entryRequest)).thenReturn(getBooks());
+        when(bookService.getAvailableBooksInLibrary(entryRequest)).thenReturn(getBooks());
 
         Response response = registerService.createEntry(entryRequest);
 

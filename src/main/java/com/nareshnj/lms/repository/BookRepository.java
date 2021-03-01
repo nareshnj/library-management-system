@@ -15,4 +15,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE b.id IN :books AND b.bookDetails.quantity > 0")
     List<Book> getAvailableBookListByIds(@Param("books") Set<Long> books);
 
+    @Query("SELECT b FROM Book b WHERE b.id IN :books")
+    List<Book> getBookListByIds(@Param("books") Set<Long> bookIds);
 }

@@ -1,6 +1,7 @@
 package com.nareshnj.lms.service.impl;
 
 import com.nareshnj.lms.entity.*;
+import com.nareshnj.lms.exception.BookUnavailableException;
 import com.nareshnj.lms.exception.SameBookBorrowException;
 import com.nareshnj.lms.exception.LimitExceedException;
 import com.nareshnj.lms.pojo.RegisterEntryRequest;
@@ -51,7 +52,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
         RegisterEntry registerEntry = mapToRegisterEntry(entry);
         registerEntryRepository.save(registerEntry);
 
-        List<Book> books = bookService.getAvailableBooksForUser(entry);
+        List<Book> books = bookService.getBookListByIds(entry.getBooks());
         updateBookCount(books, registerEntry.getEntryType());
         inactivatePreviouslyBorrowedBookEntries(registerEntry);
 
@@ -69,9 +70,14 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
                 throw new LimitExceedException(String.format("User not allowed to borrow more than %d books.", BOOKS_QUANTITY_LIMIT));
             }
 
-            List<Long> notAllowedBookIds = borrowedBookIds.stream().filter(bookId -> borrowedBookIds.contains(bookId)).collect(Collectors.toList());
+            List<Book> availableBooksInLibrary = bookService.getAvailableBooksInLibrary(entryRequest);
+            if(entryRequest.getBooks().size() > availableBooksInLibrary.size()) {
+                throw new BookUnavailableException("Requested book not available in library.");
+            }
+
+            List<Long> notAllowedBookIds = borrowedBookIds.stream().filter(bookId -> entryRequest.getBooks().contains(bookId)).collect(Collectors.toList());
             if (!notAllowedBookIds.isEmpty()) {
-                throw new SameBookBorrowException(String.format("User already have copy of %s book.", notAllowedBookIds));
+                throw new SameBookBorrowException("User already have copy of requested book.");
             }
         }
 

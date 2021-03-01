@@ -12,5 +12,7 @@ public interface BookService {
 
     Book getBookById(long id);
 
-    List<Book> getAvailableBooksForUser(RegisterEntryRequest entryRequest);
+    List<Book> getBookListByIds(Set<Long> bookIds);
+
+    List<Book> getAvailableBooksInLibrary(RegisterEntryRequest entryRequest);
 }

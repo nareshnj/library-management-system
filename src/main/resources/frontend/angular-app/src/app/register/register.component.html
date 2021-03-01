@@ -1,5 +1,10 @@
 <div class="row mt-2 mb-1">
-  <div class="col d-flex justify-content-end">
+  <div class="col-11">
+    <div [ngClass]="response.class" role="alert" *ngIf="response.status">
+      {{response.message}}
+    </div>
+  </div>
+  <div class="col-1">
     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#registerModal">Create</button>
   </div>
 </div>
@@ -7,9 +12,10 @@
 <table class="table table-hover table-striped table-sm">
     <thead>
       <tr>
-        <th scope="col">No</th>
+        <th scope="col">Id</th>
         <th scope="col">User</th>
         <th scope="col">Entry Type</th>
+        <th scope="col">Books</th>
         <th scope="col">Created Time</th>
       </tr>
     </thead>
@@ -17,8 +23,9 @@
       <tr *ngFor="let item of registerEntryList">
         <th scope="row">{{item.id}}</th>
         <td>{{item.user.lastName}}, {{item.user.firstName}}</td>
-        <td>{{item.entryType}}</td>
-        <td>{{item.createdDateTime}}</td>
+        <td>{{item.entryType | titlecase}}</td>
+        <td>{{item.bookNames.join(', ')}}</td>
+        <td>{{item.createdDateTime | date : 'medium'}}</td>
       </tr>
 
     </tbody>
@@ -47,7 +54,9 @@
             <div class="form-group row">
               <label for="entryTypeLabel" class="col-sm-4 col-form-label col-form-label-sm">Entry Type</label>
               <div class="col-sm-8">
-                  <select class="custom-select mr-sm-2" id="entryTypeLabel" [(ngModel)]="entryForm.entryType" name="entryType">
+                  <select class="custom-select mr-sm-2" id="entryTypeLabel" [(ngModel)]="entryForm.entryType"
+                  name="entryType" (ngModelChange)="loadAvailableBookList($event)"
+                  [disabled]="entryForm.userId == -1">
                   <option value="-1">--- Select Entry Type ---</option>
                     <option *ngFor="let entry of entryType" [ngValue]="entry.id">{{entry.value}}</option>
                 </select>
@@ -61,7 +70,8 @@
                 [data]="bookList"
                 [(ngModel)]="entryForm.books"
                 [settings]="dropdownSettings"
-                name="books">
+                name="books"
+                [disabled]="entryForm.entryType == -1">
               </ng-multiselect-dropdown>
               </div>
             </div>

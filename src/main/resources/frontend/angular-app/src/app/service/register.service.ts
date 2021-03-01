@@ -1,3 +1,4 @@
+import { BaseService } from './base.service';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -5,13 +6,15 @@ import { Observable } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class RegisterService {
+export class RegisterService extends BaseService {
 
-  URL_REGISTER_ENTRY = 'http://localhost:8080/v1/register';
-  URL_GET_USERS = 'http://localhost:8080/v1/user';
-  URL_GET_BOOKS = 'http://localhost:8080/v1/book'
+  URL_REGISTER_ENTRY = this.HOST + 'register';
+  URL_GET_USERS = this.HOST + 'user';
 
-  constructor(private http: HttpClient) { }
+
+  constructor(private http: HttpClient) {
+    super();
+  }
 
   getRegisteredEntryList() : Observable<any> {
     return this.http.get(this.URL_REGISTER_ENTRY);
@@ -19,10 +22,6 @@ export class RegisterService {
 
   getUserList() : Observable<any> {
     return this.http.get(this.URL_GET_USERS);
-  }
-
-  getBookList() : Observable<any> {
-    return this.http.get(this.URL_GET_BOOKS);
   }
 
   createReisterEntry(entry): Observable<any> {

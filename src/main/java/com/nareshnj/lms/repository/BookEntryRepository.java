@@ -1,5 +1,6 @@
 package com.nareshnj.lms.repository;
 
+import com.nareshnj.lms.entity.Book;
 import com.nareshnj.lms.entity.BookEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,4 +16,7 @@ public interface BookEntryRepository extends JpaRepository<BookEntry, Long> {
 
     @Query("SELECT be.book.id FROM BookEntry be WHERE be.registerEntry.user.id = ?1 AND be.registerEntry.entryType = 'BORROW' AND be.isActive = true")
     List<Long> getBorrowedBookIdsByUserId(long userId);
+
+    @Query("SELECT be.book FROM BookEntry be WHERE be.registerEntry.user.id = ?1 AND be.registerEntry.entryType = 'BORROW' AND be.isActive = true")
+    List<Book> getBorrowedBooksByUserId(long userId);
 }

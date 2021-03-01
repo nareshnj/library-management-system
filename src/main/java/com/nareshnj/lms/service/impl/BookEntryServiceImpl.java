@@ -1,5 +1,6 @@
 package com.nareshnj.lms.service.impl;
 
+import com.nareshnj.lms.entity.Book;
 import com.nareshnj.lms.entity.BookEntry;
 import com.nareshnj.lms.pojo.RegisterEntryRequest;
 import com.nareshnj.lms.repository.BookEntryRepository;
@@ -20,6 +21,11 @@ public class BookEntryServiceImpl implements BookEntryService {
     @Override
     public List<BookEntry> getBorrowedBookEntriesByUserId(long userId) {
         return bookEntryRepository.getBorrowedBookEntriesByUserId(userId);
+    }
+
+    @Override
+    public List<Book> getBorrowedBooksByUserId(long userId) {
+        return bookEntryRepository.getBorrowedBooksByUserId(userId);
     }
 
     @Override
