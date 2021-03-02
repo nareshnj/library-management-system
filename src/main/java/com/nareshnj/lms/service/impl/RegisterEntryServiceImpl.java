@@ -2,8 +2,8 @@ package com.nareshnj.lms.service.impl;
 
 import com.nareshnj.lms.entity.*;
 import com.nareshnj.lms.exception.BookUnavailableException;
-import com.nareshnj.lms.exception.SameBookBorrowException;
 import com.nareshnj.lms.exception.LimitExceedException;
+import com.nareshnj.lms.exception.SameBookBorrowException;
 import com.nareshnj.lms.pojo.RegisterEntryRequest;
 import com.nareshnj.lms.pojo.Response;
 import com.nareshnj.lms.repository.RegisterEntryRepository;
@@ -11,6 +11,7 @@ import com.nareshnj.lms.service.BookDetailsService;
 import com.nareshnj.lms.service.BookEntryService;
 import com.nareshnj.lms.service.BookService;
 import com.nareshnj.lms.service.RegisterEntryService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class RegisterEntryServiceImpl implements RegisterEntryService {
 
     private static final int BOOKS_QUANTITY_LIMIT = 2;
@@ -51,16 +53,19 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
 
         RegisterEntry registerEntry = mapToRegisterEntry(entry);
         registerEntryRepository.save(registerEntry);
+        log.info("Entry request id [{}] saved successfully", registerEntry.getId());
 
         List<Book> books = bookService.getBookListByIds(entry.getBooks());
         updateBookCount(books, registerEntry.getEntryType());
         inactivatePreviouslyBorrowedBookEntries(registerEntry);
+        log.info("Request {} processed successfully", entry);
 
         return new Response("SUCCESS", "Request processed successfully.");
     }
 
     private void validateEntryRequest(RegisterEntryRequest entryRequest) {
-        if(ENTRY_TYPE_BORROW.equals(entryRequest.getEntryType())) {
+        log.info("Validating entry request: {}", entryRequest);
+        if (ENTRY_TYPE_BORROW.equals(entryRequest.getEntryType())) {
             if (entryRequest.getBooks().size() > BOOKS_QUANTITY_LIMIT) {
                 throw new LimitExceedException(String.format("User not allowed to borrow more than %d books.", BOOKS_QUANTITY_LIMIT));
             }
@@ -71,32 +76,37 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
             }
 
             List<Book> availableBooksInLibrary = bookService.getAvailableBooksInLibrary(entryRequest);
-            if(entryRequest.getBooks().size() > availableBooksInLibrary.size()) {
+            if (entryRequest.getBooks().size() > availableBooksInLibrary.size()) {
                 throw new BookUnavailableException("Requested book not available in library.");
             }
 
-            List<Long> notAllowedBookIds = borrowedBookIds.stream().filter(bookId -> entryRequest.getBooks().contains(bookId)).collect(Collectors.toList());
+            List<Long> notAllowedBookIds = borrowedBookIds
+                    .stream()
+                    .filter(bookId -> entryRequest.getBooks().contains(bookId))
+                    .collect(Collectors.toList());
             if (!notAllowedBookIds.isEmpty()) {
                 throw new SameBookBorrowException("User already have copy of requested book.");
             }
         }
+        log.info("Entry request is valid.");
 
     }
 
     private void inactivatePreviouslyBorrowedBookEntries(RegisterEntry registerEntry) {
-        if(ENTRY_TYPE_RETURN.equals(registerEntry.getEntryType())) {
+        if (ENTRY_TYPE_RETURN.equals(registerEntry.getEntryType())) {
             List<BookEntry> borrowedBookEntries = bookEntryService.getBorrowedBookEntriesByUserId(registerEntry.getUser().getId());
             List<BookEntry> inactivateEntries = new ArrayList<>();
-            for(BookEntry bookEntry: registerEntry.getBookEntries()) {
-                for(BookEntry borrowedBookEntry : borrowedBookEntries) {
-                    if(bookEntry.getBook().getId() == borrowedBookEntry.getBook().getId()) {
+            for (BookEntry bookEntry : registerEntry.getBookEntries()) {
+                for (BookEntry borrowedBookEntry : borrowedBookEntries) {
+                    if (bookEntry.getBook().getId() == borrowedBookEntry.getBook().getId()) {
                         borrowedBookEntry.setActive(false);
                         inactivateEntries.add(borrowedBookEntry);
                     }
                 }
             }
 
-            if(!inactivateEntries.isEmpty()) {
+            log.info("Updating status of previously borrowed books [{}] status to inactive", inactivateEntries);
+            if (!inactivateEntries.isEmpty()) {
                 bookEntryService.updateAll(inactivateEntries);
             }
         }
@@ -114,6 +124,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
                 quantity = bookDetails.getQuantity() + 1;
             }
             bookDetails.setQuantity(quantity);
+            log.info("Updating book '{}' count to {}", book.getName(), quantity);
             updatedBookDetails.add(bookDetails);
         }
 
@@ -121,6 +132,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
     }
 
     private RegisterEntry mapToRegisterEntry(RegisterEntryRequest request) {
+        log.info("Mapping entry request: {}", request);
         RegisterEntry entry = new RegisterEntry();
         User user = new User();
         user.setId(request.getUserId());
@@ -136,9 +148,9 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
             book.setId(id);
             bookEntry.setBook(book);
 
-            if(ENTRY_TYPE_BORROW.equals(request.getEntryType())) {
+            if (ENTRY_TYPE_BORROW.equals(request.getEntryType())) {
                 bookEntry.setActive(true);
-            }else {
+            } else {
                 bookEntry.setActive(false);
             }
 
@@ -148,6 +160,7 @@ public class RegisterEntryServiceImpl implements RegisterEntryService {
         entry.setEntryType(request.getEntryType());
         entry.setCreatedDateTime(LocalDateTime.now());
 
+        log.info("Mapped to RegisterEntry object: {}", entry);
         return entry;
     }
 }

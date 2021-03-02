@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class BaseService {
 
-  HOST: string = 'http://localhost:8080/v1/';
+  HOST: string = 'http://localhost:8080/lms/v1/';
 
   constructor() { }
 }

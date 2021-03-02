@@ -28,4 +28,14 @@ public class RegisterEntry {
 
     private LocalDateTime createdDateTime;
 
+    @Override
+    public String toString() {
+        return "RegisterEntry{" +
+                "id=" + id +
+                ", user=" + user +
+                ", bookEntries=" + bookEntries +
+                ", entryType='" + entryType + '\'' +
+                ", createdDateTime=" + createdDateTime +
+                '}';
+    }
 }

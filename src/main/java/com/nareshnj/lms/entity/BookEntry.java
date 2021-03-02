@@ -27,4 +27,13 @@ public class BookEntry {
 
     private boolean isActive;
 
+    @Override
+    public String toString() {
+        return "BookEntry{" +
+                "id=" + id +
+                ", book=" + book +
+                ", quantity=" + quantity +
+                ", isActive=" + isActive +
+                '}';
+    }
 }

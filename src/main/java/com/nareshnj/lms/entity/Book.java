@@ -22,4 +22,13 @@ public class Book {
     @JoinColumn(name = "book_details_id", referencedColumnName = "id")
     private BookDetails bookDetails;
 
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", author='" + author + '\'' +
+                ", bookDetails=" + bookDetails +
+                '}';
+    }
 }
