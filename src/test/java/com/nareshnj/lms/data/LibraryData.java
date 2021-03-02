@@ -2,7 +2,6 @@ package com.nareshnj.lms.data;
 
 import com.nareshnj.lms.entity.Book;
 import com.nareshnj.lms.entity.BookDetails;
-import com.nareshnj.lms.entity.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +20,6 @@ public class LibraryData {
     public static final long BOOK_2_DETAILS_ID = 2L;
     public static final int BOOK_2_QUANTITY = 7;
 
-    public static final long USER_ID = 1L;
     public static final String USER_1_FIRST_NAME = "firstName";
     public static final String USER_1_LAST_NAME = "lastName";
 

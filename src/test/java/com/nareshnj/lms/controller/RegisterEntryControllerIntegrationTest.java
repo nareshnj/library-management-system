@@ -17,12 +17,15 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.nareshnj.lms.data.LibraryData.USER_1_FIRST_NAME;
+import static com.nareshnj.lms.data.LibraryData.USER_1_LAST_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -62,8 +65,8 @@ public class RegisterEntryControllerIntegrationTest {
     @BeforeAll
     public void commonSetUp() {
         user = new User();
-        user.setFirstName("Naresh");
-        user.setLastName("Jagadale");
+        user.setFirstName(USER_1_FIRST_NAME);
+        user.setLastName(USER_1_LAST_NAME);
         userRepository.save(user);
     }
 
@@ -86,10 +89,7 @@ public class RegisterEntryControllerIntegrationTest {
 
         RegisterEntryRequest entryRequest = createRegisterEntryRequest(ENTRY_TYPE_BORROW);
 
-        mockMvc.perform(post("/v1/register")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(entryRequest)))
-                .andExpect(status().isOk());
+        assertRequest(status().isOk(), entryRequest);
 
         Set<Long> books = entryRequest.getBooks();
         List<RegisterEntry> registerEntries = registerEntryRepository.findByUserId(user.getId());
@@ -106,19 +106,12 @@ public class RegisterEntryControllerIntegrationTest {
     public void test_givenUserAlreadyBorrowedBook_whenUserReturnBook_thenBookRemovedFromBorrowedList_andAddedInLibrary() throws Exception {
 
         RegisterEntryRequest borrowEntryRequest = createRegisterEntryRequest(ENTRY_TYPE_BORROW);
-        mockMvc.perform(post("/v1/register")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(borrowEntryRequest)))
-                .andExpect(status().isOk());
+        assertRequest(status().isOk(), borrowEntryRequest);
 
         RegisterEntryRequest entryRequest = createRegisterEntryRequest(ENTRY_TYPE_RETURN);
 
-        mockMvc.perform(post("/v1/register")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(entryRequest)))
-                .andExpect(status().isOk());
+        assertRequest(status().isOk(), entryRequest);
 
-        Set<Long> books = entryRequest.getBooks();
         List<RegisterEntry> registerEntries = registerEntryRepository.findByUserId(user.getId());
 
         assertEquals(2, registerEntries.size());
@@ -131,16 +124,18 @@ public class RegisterEntryControllerIntegrationTest {
     @Test
     public void test_givenUserAlreadyBorrowedBook_whenUserBorrowSameBookCopyAgain_thenThrowSameBookBorrowException() throws Exception {
         RegisterEntryRequest borrowEntryRequest = createRegisterEntryWithSingleBook(ENTRY_TYPE_BORROW);
+        assertRequest(status().isOk(), borrowEntryRequest);
+
+        assertRequest(status().isConflict(), borrowEntryRequest);
+
+    }
+
+
+    private void assertRequest(ResultMatcher expectedResult, RegisterEntryRequest entryRequest) throws Exception {
         mockMvc.perform(post("/v1/register")
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(borrowEntryRequest)))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(post("/v1/register")
-                .contentType("application/json")
-                .content(objectMapper.writeValueAsString(borrowEntryRequest)))
-                .andExpect(status().isConflict());
-
+                .content(objectMapper.writeValueAsString(entryRequest)))
+                .andExpect(expectedResult);
     }
 
     private void assertUserBorrowedBooksCount(int expectedCount) {
