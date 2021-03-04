@@ -82,7 +82,7 @@ export class RegisterComponent implements OnInit {
   }
 
   resetEntryForm() {
-    this.entryForm = {userId : -1, entryType: '-1', books: []};
+    this.entryForm = {userId : -1, entryType: -1, books: []};
   }
 
   loadAvailableBookList(value) {
@@ -97,5 +97,9 @@ export class RegisterComponent implements OnInit {
     this.bookService.getBorrowedBooksByUser(this.entryForm.userId).subscribe(data => {
       this.bookList = data;
      });
+  }
+
+  isValidForm() {
+    return this.entryForm.userId != -1 && this.entryForm.entryType != -1 && this.entryForm.books.length != 0;
   }
 }

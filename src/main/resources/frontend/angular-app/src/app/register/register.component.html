@@ -80,7 +80,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="submitRegisterEntry()">Submit</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="submitRegisterEntry()" [disabled]="!isValidForm()">Submit</button>
         </div>
       </div>
     </div>
