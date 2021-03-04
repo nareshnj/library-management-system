@@ -1,16 +1,51 @@
 # library-management-system
 
-Pre-requisite : You have Maven and Node.js installed
+**With angular:**
+1. Make sure node.js is installed.
+2. Check node is installed. Use command 'node -v' . It should printout node version. Mine is v14.16.0
+3. Go to directory: 'src\main\resources\frontend\angular-app' and run 'npm install @angular/cli' command to install angular
+4. Navigate to parent folder and run command 'mvn spring-boot:run'
+5. It will take a while when you execute above command first time.
+
+**Without Angular installation**
+1. Code base already have latest compiled angular files, so you can directly run spring boot app.
+2. Comment out following plugin from pom.file which executes angular command:
+   `<plugin>
+       <groupId>org.codehaus.mojo</groupId>
+       <artifactId>exec-maven-plugin</artifactId>
+       <version>1.6.0</version>
+       <executions>
+           <execution>
+               <phase>validate</phase>
+               <goals>
+                <goal>exec</goal>
+               </goals>
+           </execution>
+       </executions>
+       <configuration>
+           <executable>ng</executable>
+           <workingDirectory>src\main\resources\frontend\angular-app</workingDirectory>
+           <arguments>
+            <argument>build</argument>
+           </arguments>
+       </configuration>
+   </plugin>`
+3. Run command 'mvn spring-boot:run'
+
 
 **Technologies:**
 1. Java
 2. Spring Boot: 2.4.3
 3. Spring Data JPA
-4.  JUnit: 5
+4. JUnit: 5
 5. Mockito: 3.6
 6. Angular: 11
 7. Boostrap: 4.6
 8. Database: in-memory H2
+
+** How to run test cases **
+1. Run 'mvn test' command from cmd
+2. Test cases will also get executed while creating build
 
 **How to run:**
 1. Open command prompt
