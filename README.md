@@ -16,6 +16,7 @@ Pre-requisite : You have Maven and Node.js installed
 1. Open command prompt
 2. Go to project parent folder
 3. Run command: mvn spring-boot:run
+4. Hit http://localhost:8080/ in your favourite browser 
 
 **Functionality provided:**
 1. 3 users and 3 books already loaded in database on application start-up
